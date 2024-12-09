@@ -2843,6 +2843,11 @@ msgid "Invoices"
 msgstr ""
 
 #. module: g2p_programs
+#: model:ir.model.fields,field_description:g2p_programs.field_g2p_program_membership__is_coa_installed
+msgid "Is Coa Installed"
+msgstr ""
+
+#. module: g2p_programs
 #: model:ir.model.fields,field_description:g2p_programs.field_g2p_cycle__message_is_follower
 #: model:ir.model.fields,field_description:g2p_programs.field_g2p_program__message_is_follower
 #: model:ir.model.fields,field_description:g2p_programs.field_g2p_program_fund__message_is_follower
