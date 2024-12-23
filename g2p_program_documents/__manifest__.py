@@ -17,11 +17,7 @@
         "views/program_membership_view.xml",
         "views/entitlement_view.xml",
     ],
-    "assets": {
-        "web.assets_backend": [
-            "/g2p_program_documents/static/src/js/preview_document.js",
-        ],
-    },
+    "assets": {},
     "demo": [],
     "images": [],
     "application": True,
