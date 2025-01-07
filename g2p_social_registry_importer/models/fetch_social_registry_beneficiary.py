@@ -45,7 +45,7 @@ class G2PFetchSocialRegistryBeneficiary(models.Model):
     imported_registrant_ids = fields.One2many(
         "g2p.social.registry.imported.registrants",
         "fetch_social_registry_id",
-        "Imported Regsitrants",
+        "Imported Registrants",
         readonly=True,
     )
 
