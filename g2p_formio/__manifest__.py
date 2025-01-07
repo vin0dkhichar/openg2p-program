@@ -17,6 +17,7 @@
         "g2p_program_documents",
     ],
     "data": [
+        "data/formio_default_js_option.xml",
         "views/formio_builder.xml",
         "views/program_view.xml",
         "wizard/g2p_self_service_program_view_wizard.xml",
