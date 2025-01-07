@@ -15,10 +15,12 @@
     ],
     "data": [
         "data/ir_config_params.xml",
+        "data/ir_cron_data.xml",
         "data/social_registry_data_source.xml",
         "data/search_criteria.xml",
         "security/ir.model.access.csv",
         "views/fetch_social_registry_beneficiary_views.xml",
+        "views/res_config_view.xml",
     ],
     "external_dependencies": {"python": ["camel_converter"]},
     "application": True,
