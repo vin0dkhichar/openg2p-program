@@ -771,7 +771,7 @@ class G2PFetchSocialRegistryBeneficiary(models.Model):
             }
 
         for rec in self:
-            if rec.job_status == "draft" or rec.job_status == "completed":
+            if rec.job_status == "draft" or rec.job_status == "completed" or rec.job_status == "failed":
                 # Start the import job
                 _logger.info("Job Started")
                 rec.job_status = "started"
@@ -799,8 +799,10 @@ class G2PFetchSocialRegistryBeneficiary(models.Model):
                 # Stop the import job
                 _logger.info("Job Stopped")
                 rec.job_status = "completed"
-                rec.sudo().cron_id.unlink()
-                rec.cron_id = None
+                # Safely cleanup cron job if it exists
+                if rec.cron_id:
+                    rec.sudo().cron_id.unlink()
+                    rec.cron_id = None
 
     def _schedule_async_import(self):
         """Schedule asynchronous import process"""

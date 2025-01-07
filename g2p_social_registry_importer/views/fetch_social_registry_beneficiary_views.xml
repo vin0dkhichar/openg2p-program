@@ -118,12 +118,6 @@
                                     <field name="is_updated" />
                                 </tree>
                             </field>
-                        <!-- <button
-                            name="fetch_social_registry_beneficiary"
-                            string="Fetch"
-                            type="object"
-                            class="oe_highlight btn-primary"
-                        /> -->
                     </group>
                     <group string="Schedule Configuration" invisible="cron_running">
                         <field name="interval_number" />
