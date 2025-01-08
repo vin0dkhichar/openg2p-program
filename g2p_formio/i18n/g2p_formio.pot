@@ -47,7 +47,7 @@ msgstr ""
 
 #. module: g2p_formio
 #: model:ir.model.fields,field_description:g2p_formio.field_g2p_program__portal_form_builder_id
-#: model:ir.model.fields,field_description:g2p_formio.field_g2p_program_create_wizard__self_service_portal_form
+#: model:ir.model.fields,field_description:g2p_formio.field_g2p_program_create_wizard__portal_form_builder_id
 msgid "Program Form"
 msgstr ""
 
