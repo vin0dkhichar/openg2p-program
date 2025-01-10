@@ -49,7 +49,6 @@ class G2PFetchSocialRegistryBeneficiary(models.Model):
         readonly=True,
     )
 
-    # Job status tracking fields
     job_status = fields.Selection(
         [
             ("draft", "Draft"),
@@ -61,10 +60,9 @@ class G2PFetchSocialRegistryBeneficiary(models.Model):
         default="draft",
     )
 
-    # Timestamps for tracking job execution
     start_datetime = fields.Datetime("Start Time")
     end_datetime = fields.Datetime("End Time")
-    cron_id = fields.Many2one("ir.cron", string="Cron Job")  # Reference to scheduled job
+    cron_id = fields.Many2one("ir.cron", string="Cron Job")
 
     interval_number = fields.Integer(default=1, help="Repeat every x.")
     interval_type = fields.Selection(
@@ -91,17 +89,14 @@ class G2PFetchSocialRegistryBeneficiary(models.Model):
         try:
             # Step 1: Validate data source configuration
             if not self.data_source_id:
-                raise ValidationError(_("Data source is not configured"))
+                raise Exception(_("Data source is not configured"))
 
             if not self.data_source_id.url:
-                raise ValidationError(_("Data source URL is not configured"))
+                raise Exception(_("Data source URL is not configured"))
 
             # Step 2: Get and validate paths
-            try:
-                paths = self.get_data_source_paths()
-                auth_url = self.get_social_registry_auth_url(paths)
-            except ValidationError as e:
-                raise ValidationError(_("Data source path configuration error: %s") % str(e)) from e
+            paths = self.get_data_source_paths()
+            auth_url = self.get_social_registry_auth_url(paths)
 
             # Step 3: Validate required credentials
             client_id = (
@@ -115,23 +110,12 @@ class G2PFetchSocialRegistryBeneficiary(models.Model):
             )
 
             if not all([client_id, client_secret, grant_type]):
-                raise ValidationError(
-                    _("Missing credentials: Please configure client ID, secret and grant type")
-                )
+                raise Exception(_("Missing credentials: Please configure client ID, secret and grant type"))
 
             # Step 4: Test authentication
-            try:
-                auth_token = self.get_auth_token(auth_url)
-                if not auth_token:
-                    raise ValidationError(_("Authentication failed: No token received"))
-            except requests.exceptions.ConnectionError as e:
-                raise ValidationError(
-                    _("Connection failed: Unable to reach authentication server at %s") % auth_url
-                ) from e
-            except requests.exceptions.Timeout as e:
-                raise ValidationError(_("Connection timed out while contacting authentication server")) from e
-            except requests.exceptions.RequestException as e:
-                raise ValidationError(_("Connection error: %s") % str(e)) from e
+            auth_token = self.get_auth_token(auth_url)
+            if not auth_token:
+                raise Exception(_("Authentication failed: No token received"))
 
             # If we get here, all checks passed
             return {
@@ -145,26 +129,14 @@ class G2PFetchSocialRegistryBeneficiary(models.Model):
                 },
             }
 
-        except ValidationError as ve:
-            _logger.warning("Connection test failed: %s", str(ve))
-            return {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": _("Connection Test Failed"),
-                    "message": str(ve),
-                    "type": "danger",
-                    "sticky": True,
-                },
-            }
         except Exception as e:
-            _logger.error("Unexpected error during connection test: %s", str(e), exc_info=True)
+            _logger.error("Error during connection test: %s", str(e), exc_info=True)
             return {
                 "type": "ir.actions.client",
                 "tag": "display_notification",
                 "params": {
                     "title": _("Connection Test Failed"),
-                    "message": _("Unexpected error occurred. Please check the logs."),
+                    "message": str(e),
                     "type": "danger",
                     "sticky": True,
                 },
@@ -552,292 +524,202 @@ class G2PFetchSocialRegistryBeneficiary(models.Model):
 
     def process_registrants_async(self, registrants, count):
         """Queue registrants for asynchronous processing in batches."""
-        try:
-            self.write({"job_status": "running"})
 
-            max_registrant = int(
-                self.env["ir.config_parameter"]
-                .sudo()
-                .get_param("g2p_import_social_registry.max_registrants_count_job_queue")
-            )
+        max_registrant = int(
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param("g2p_import_social_registry.max_registrants_count_job_queue")
+        )
+        actual_count = min(len(registrants), count)
 
-            actual_count = min(len(registrants), count)
-            total_batches = -(-(actual_count) // max_registrant)
+        total_batches = -(-actual_count // max_registrant)
 
-            jobs = []
-            for i in range(0, actual_count, max_registrant):
-                batch = registrants[i : i + max_registrant]
-                batch_num = i // max_registrant + 1
+        jobs = []
+        for i in range(0, count, max_registrant):
+            batch = registrants[i : i + max_registrant]
+            batch_num = i // max_registrant + 1
 
-                description = f"{self.name} - Batch {batch_num}/{total_batches} ({len(batch)} registrants)"
-                jobs.append(self.with_delay(description=description).process_registrants(batch))
+            description = f"{self.name} - Batch {batch_num}/{total_batches} ({len(batch)} registrants)"
+            jobs.append(self.delayable(description=description).process_registrants(batch))
 
-            # Queue all batch jobs and add a final job to update status when complete
-            main_job = group(*jobs)
-            # Add callback to mark completion and update timestamps
-            main_job.on_done(
-                self.with_delay(description="Update import status").write(
-                    {
-                        "job_status": "completed",
-                        "end_datetime": fields.Datetime.now(),
-                        "last_sync_date": fields.Datetime.now(),
-                    }
-                )
-            )
-            main_job.delay()
-
-            return True
-
-        except Exception as e:
-            self.write({"job_status": "failed", "end_datetime": fields.Datetime.now()})
-            _logger.error(f"Failed to queue batch jobs: {str(e)}")
-            raise
+        # Queue all batch jobs
+        main_job = group(*jobs)
+        main_job.delay()
 
     def fetch_social_registry_beneficiary(self):
-        """Main entry point for fetching beneficiaries.
-        Handles both sync and async processing based on configuration"""
-        enable_async = (
-            self.env["ir.config_parameter"].sudo().get_param("g2p_import_social_registry.enable_async")
+        self.write({"job_status": "running"})
+
+        config_parameters = self.env["ir.config_parameter"].sudo()
+        today_isoformat = datetime.now(timezone.utc).isoformat()
+        social_registry_version = config_parameters.get_param("social_registry_version")
+        max_registrant = int(
+            config_parameters.get_param("g2p_import_social_registry.max_registrants_count_job_queue")
         )
 
-        if enable_async:
-            return self._schedule_async_import()
-        else:
-            return self._fetch_Beneficiary()
+        message_id = str(uuid.uuid4())
+        transaction_id = str(uuid.uuid4())
+        reference_id = str(uuid.uuid4())
 
-    def _fetch_Beneficiary(self):
-        """Synchronous import process"""
-        try:
-            # Update status to running when sync process starts
-            self.write({"job_status": "running", "start_datetime": fields.Datetime.now()})
+        # Define Data Source
+        paths = self.get_data_source_paths()
 
-            config_parameters = self.env["ir.config_parameter"].sudo()
-            today_isoformat = datetime.now(timezone.utc).isoformat()
-            social_registry_version = config_parameters.get_param("social_registry_version")
-            max_registrant = int(
-                config_parameters.get_param("g2p_import_social_registry.max_registrants_count_job_queue")
-            )
+        # Define Social Registry auth url
 
-            message_id = str(uuid.uuid4())
-            transaction_id = str(uuid.uuid4())
-            reference_id = str(uuid.uuid4())
+        full_social_registry_auth_url = self.get_social_registry_auth_url(paths)
 
-            # Define Data Source
-            paths = self.get_data_source_paths()
+        # Retrieve auth token
 
-            # Define Social Registry auth url
+        auth_token = self.get_auth_token(full_social_registry_auth_url)
 
-            full_social_registry_auth_url = self.get_social_registry_auth_url(paths)
+        # Define Social Registry search url
+        full_social_registry_search_url = self.get_social_registry_search_url(paths)
 
-            # Retrieve auth token
+        # Define header
+        header = self.get_header_for_body(
+            social_registry_version,
+            today_isoformat,
+            message_id,
+        )
 
-            auth_token = self.get_auth_token(full_social_registry_auth_url)
+        # Define message
+        message = self.get_message(
+            today_isoformat,
+            transaction_id=transaction_id,
+            reference_id=reference_id,
+        )
 
-            # Define Social Registry search url
-            full_social_registry_search_url = self.get_social_registry_search_url(paths)
+        signature = ""
 
-            # Define header
-            header = self.get_header_for_body(
-                social_registry_version,
-                today_isoformat,
-                message_id,
-            )
+        # Define data
+        data = self.get_data(
+            signature,
+            header,
+            message,
+        )
 
-            # Define message
-            message = self.get_message(
-                today_isoformat,
-                transaction_id=transaction_id,
-                reference_id=reference_id,
-            )
+        data = json.dumps(data)
 
-            signature = ""
+        # POST Request
+        response = requests.post(
+            full_social_registry_search_url,
+            data=data,
+            headers={"Authorization": auth_token},
+            timeout=constants.REQUEST_TIMEOUT,
+        )
 
-            # Define data
-            data = self.get_data(
-                signature,
-                header,
-                message,
-            )
+        if not response.ok:
+            _logger.error("Social Registry Search API response: %s", response.text)
+        response.raise_for_status()
 
-            data = json.dumps(data)
+        sticky = False
 
-            # POST Request
-            response = requests.post(
-                full_social_registry_search_url,
-                data=data,
-                headers={"Authorization": auth_token},
-                timeout=constants.REQUEST_TIMEOUT,
-            )
+        # Process response
+        if response.ok:
+            kind = "success"
+            message = _("Successfully Imported Social Registry Beneficiaries")
 
-            if not response.ok:
-                _logger.error("Social Registry Search API response: %s", response.text)
-            response.raise_for_status()
+            search_responses = response.json().get("message", {}).get("search_response", [])
+            if not search_responses:
+                kind = "warning"
+                message = _("No imported beneficiary")
 
-            sticky = False
+            for search_response in search_responses:
+                reg_record = search_response.get("data", {}).get("reg_records", [])
+                registrants = reg_record.get("getRegistrants", [])
+                total_partners_count = reg_record.get("totalRegistrantCount", "")
 
-            # Process response
-            if response.ok:
-                kind = "success"
-                message = _("Successfully Imported Social Registry Beneficiaries")
-
-                search_responses = response.json().get("message", {}).get("search_response", [])
-                if not search_responses:
-                    kind = "warning"
-                    message = _("No imported beneficiary")
-
-                for search_response in search_responses:
-                    reg_record = search_response.get("data", {}).get("reg_records", [])
-                    registrants = reg_record.get("getRegistrants", [])
-                    total_partners_count = reg_record.get("totalRegistrantCount", "")
-
-                    if total_partners_count:
-                        if total_partners_count < max_registrant:
-                            self.process_registrants(registrants)
-
-                        else:
-                            self.process_registrants_async(registrants, total_partners_count)
-                            kind = "success"
-                            message = _("Fetching from Social Registry Started Asynchronously.")
-                            sticky = True
+                if total_partners_count:
+                    if total_partners_count < max_registrant:
+                        self.process_registrants(registrants)
 
                     else:
+                        self.process_registrants_async(registrants, total_partners_count)
                         kind = "success"
-                        message = _("No matching records found.")
+                        message = _("Fetching from Social Registry Started Asynchronously.")
+                        sticky = True
 
-                # Update completion status and force refresh
-                self.write(
-                    {
-                        "job_status": "completed",
-                        "end_datetime": fields.Datetime.now(),
-                        "last_sync_date": fields.Datetime.now(),
-                    }
-                )
+                else:
+                    kind = "success"
+                    message = _("No matching records found.")
 
-            else:
-                self.write({"job_status": "failed", "end_datetime": fields.Datetime.now()})
-                kind = "danger"
-                message = response.json().get("error", {}).get("message", "")
-                if not message:
-                    message = _("{reason}: Unable to connect to API.").format(reason=response.reason)
+            self.last_sync_date = fields.Datetime.now()
 
-            action = {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": _("Social Registry"),
-                    "message": message,
-                    "sticky": sticky,
-                    "type": kind,
-                    "next": {
-                        "type": "ir.actions.act_window_close",
-                    },
-                },
-            }
-            return action
-
-        except Exception as e:
+        else:
             self.write({"job_status": "failed", "end_datetime": fields.Datetime.now()})
-            _logger.error("Social Registry import failed: %s", str(e))
-            return {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": _("Social Registry"),
-                    "message": _("Import failed: %s") % str(e),
-                    "type": "danger",
-                    "sticky": True,
+            kind = "danger"
+            message = response.json().get("error", {}).get("message", "")
+            if not message:
+                message = _("{reason}: Unable to connect to API.").format(reason=response.reason)
+
+        self.write({"job_status": "completed", "end_datetime": fields.Datetime.now()})
+
+        action = {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Social Registry"),
+                "message": message,
+                "sticky": sticky,
+                "type": kind,
+                "next": {
+                    "type": "ir.actions.act_window_close",
                 },
-            }
+            },
+        }
+        return action
 
     def social_registry_import_action_trigger(self):
         """
-        Trigger the social registry import action - starts/stops the automated import process
+        Trigger the social registry import action based on scheduled_import configuration
         """
-        # Check if asynchronous import is enabled
-        enable_async = (
-            self.env["ir.config_parameter"].sudo().get_param("g2p_import_social_registry.enable_async")
-        )
-
-        if not enable_async:
-            return {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": _("Asynchronous Import Disabled"),
-                    "message": _("Asynchronous import is disabled in system configuration."),
-                    "type": "warning",
-                    "sticky": True,
-                },
-            }
 
         for rec in self:
-            if rec.job_status == "draft" or rec.job_status == "completed" or rec.job_status == "failed":
-                # Start the import job
-                _logger.info("Job Started")
-                rec.job_status = "started"
+            if rec.job_status in ["draft", "completed", "failed"]:
+                # Start the scheduled import
+                rec.write({"job_status": "started", "start_datetime": fields.Datetime.now()})
+                # Create or update cron job
+                cron_vals = {
+                    "name": f"Social Registry Import - {rec.name} #{rec.id}",
+                    "active": True,
+                    "interval_number": rec.interval_number,
+                    "interval_type": rec.interval_type,
+                    "model_id": self.env["ir.model"]
+                    .search([("model", "=", "g2p.fetch.social.registry.beneficiary")])
+                    .id,
+                    "state": "code",
+                    "code": f"model.browse({rec.id}).fetch_social_registry_beneficiary()",
+                    "doall": False,
+                    "numbercall": -1,
+                }
 
-                # Create scheduled job (cron)
-                ir_cron = self.env["ir.cron"].sudo()
-                rec.cron_id = ir_cron.create(
-                    {
-                        "name": f"Social Registry Import Cron {rec.name} #{rec.id}",
-                        "active": True,
-                        "interval_number": self.interval_number,
-                        "interval_type": self.interval_type,
-                        "model_id": self.env["ir.model"]
-                        .search([("model", "=", "g2p.fetch.social.registry.beneficiary")])
-                        .id,
-                        "state": "code",
-                        "code": f"model.browse({rec.id}).fetch_social_registry_beneficiary()",
-                        "doall": False,
-                        "numbercall": -1,
-                    }
-                )
-                rec.job_status = "running"
-
-            elif rec.job_status == "started" or rec.job_status == "running":
-                # Stop the import job
-                _logger.info("Job Stopped")
-                rec.job_status = "completed"
-                # Safely cleanup cron job if it exists
                 if rec.cron_id:
-                    rec.sudo().cron_id.unlink()
+                    rec.cron_id.write(cron_vals)
+                else:
+                    rec.cron_id = self.env["ir.cron"].sudo().create(cron_vals)
+
+                message = _(
+                    "Scheduled import started - will run every %(interval_number)s %(interval_type)s"
+                ) % {
+                    "interval_number": rec.interval_number,
+                    "interval_type": rec.interval_type,
+                }
+
+            elif rec.job_status in ["started", "running"]:
+                # Stop the scheduled import
+                rec.write({"job_status": "completed", "end_datetime": fields.Datetime.now()})
+                if rec.cron_id:
+                    rec.cron_id.unlink()
                     rec.cron_id = None
-
-    def _schedule_async_import(self):
-        """Schedule asynchronous import process"""
-        try:
-            _logger.info(f"Starting async import for {self.name}")
-
-            self.write({"job_status": "started", "start_datetime": fields.Datetime.now()})
-
-            description = f"Scheduled Social Registry Import - {self.name}"
-            job = self.with_delay(description=description)._fetch_Beneficiary()
-
-            _logger.info(f"Successfully queued async import job {job.uuid}")
+                message = _("Scheduled import stopped")
 
             return {
                 "type": "ir.actions.client",
                 "tag": "display_notification",
                 "params": {
-                    "title": _("Social Registry"),
-                    "message": _("Async import scheduled successfully"),
+                    "title": _("Social Registry Import"),
+                    "message": message,
                     "type": "success",
                     "sticky": False,
-                },
-            }
-
-        except Exception as e:
-            _logger.error(f"Failed to schedule async import: {str(e)}", exc_info=True)
-            self.write({"job_status": "failed", "end_datetime": fields.Datetime.now()})
-            return {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": _("Social Registry"),
-                    "message": _("Failed to schedule async import: %s") % str(e),
-                    "type": "danger",
-                    "sticky": True,
                 },
             }
 

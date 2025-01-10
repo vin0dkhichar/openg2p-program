@@ -27,6 +27,7 @@
                     icon="fa-play"
                     class="oe_highlight"
                     invisible="job_status not in ('draft', 'completed')"
+                    title="Click to schedule the social registry import"
                 />
                 <button
                     type="action"
@@ -35,14 +36,16 @@
                     icon="fa-stop"
                     class="oe_highlight"
                     invisible="job_status not in ('started', 'running')"
+                    title="Click to stop the scheduled social registry import"
                 />
-                 <button
+                <button
                     type="action"
                     name="%(action_social_registry_import_action)d"
                     string="Restart"
                     icon="fa-refresh"
                     class="oe_highlight"
                     invisible="job_status not in ('failed')"
+                    title="Click to restart the failed social registry import"
                 />
             </tree>
         </field>
@@ -59,18 +62,16 @@
                         string="Test Connection"
                         type="object"
                         class="oe_highlight"
+                        title="Click to test social registry import API"
                     />
                     <button
                         name="fetch_social_registry_beneficiary"
                         string="Import Records"
                         type="object"
                         class="oe_highlight"
+                        title="Click to manually import social registry data"
                     />
-                    <field
-                        name="job_status"
-                        widget="statusbar"
-                        statusbar_visible="draft,started,running,completed"
-                    />
+                    <field name="job_status" invisible="1" />
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -81,6 +82,7 @@
                             icon="fa-play"
                             class="oe_highlight"
                             invisible="job_status not in ('draft', 'completed')"
+                            title="Click to schedule the social registry import"
                         />
                         <button
                             type="action"
@@ -89,6 +91,7 @@
                             icon="fa-stop"
                             class="oe_highlight"
                             invisible="job_status not in ('started', 'running')"
+                            title="Click to stop the scheduled social registry import"
                         />
                         <button
                             type="action"
@@ -97,6 +100,7 @@
                             icon="fa-refresh"
                             class="oe_highlight"
                             invisible="job_status not in ('failed')"
+                            title="Click to restart the failed social registry import"
                         />
                     </div>
                     <group>
