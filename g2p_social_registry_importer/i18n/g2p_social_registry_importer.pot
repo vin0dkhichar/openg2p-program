@@ -17,38 +17,40 @@ msgstr ""
 #. odoo-python
 #: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
 #, python-format
-msgid "Async import scheduled successfully"
-msgstr ""
-
-#. module: g2p_social_registry_importer
-#. odoo-python
-#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
-#, python-format
-msgid "Asynchronous Import Disabled"
-msgstr ""
-
-#. module: g2p_social_registry_importer
-#. odoo-python
-#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
-#, python-format
-msgid "Asynchronous import is disabled in system configuration."
-msgstr ""
-
-#. module: g2p_social_registry_importer
-#. odoo-python
-#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
-#, python-format
 msgid "Authentication failed: No token received"
+msgstr ""
+
+#. module: g2p_social_registry_importer
+#: model_terms:ir.ui.view,arch_db:g2p_social_registry_importer.fetch_social_registry_beneficiary_form
+msgid "Click to manually import social registry data"
+msgstr ""
+
+#. module: g2p_social_registry_importer
+#: model_terms:ir.ui.view,arch_db:g2p_social_registry_importer.fetch_social_registry_beneficiary_form
+#: model_terms:ir.ui.view,arch_db:g2p_social_registry_importer.fetch_social_registry_beneficiary_tree
+msgid "Click to restart the failed social registry import"
+msgstr ""
+
+#. module: g2p_social_registry_importer
+#: model_terms:ir.ui.view,arch_db:g2p_social_registry_importer.fetch_social_registry_beneficiary_form
+#: model_terms:ir.ui.view,arch_db:g2p_social_registry_importer.fetch_social_registry_beneficiary_tree
+msgid "Click to schedule the social registry import"
+msgstr ""
+
+#. module: g2p_social_registry_importer
+#: model_terms:ir.ui.view,arch_db:g2p_social_registry_importer.fetch_social_registry_beneficiary_form
+#: model_terms:ir.ui.view,arch_db:g2p_social_registry_importer.fetch_social_registry_beneficiary_tree
+msgid "Click to stop the scheduled social registry import"
+msgstr ""
+
+#. module: g2p_social_registry_importer
+#: model_terms:ir.ui.view,arch_db:g2p_social_registry_importer.fetch_social_registry_beneficiary_form
+msgid "Click to test social registry import API"
 msgstr ""
 
 #. module: g2p_social_registry_importer
 #: model:ir.model.fields.selection,name:g2p_social_registry_importer.selection__g2p_fetch_social_registry_beneficiary__job_status__completed
 msgid "Completed"
-msgstr ""
-
-#. module: g2p_social_registry_importer
-#: model:ir.model,name:g2p_social_registry_importer.model_res_config_settings
-msgid "Config Settings"
 msgstr ""
 
 #. module: g2p_social_registry_importer
@@ -61,30 +63,8 @@ msgstr ""
 #. module: g2p_social_registry_importer
 #. odoo-python
 #: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
-#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
 #, python-format
 msgid "Connection Test Failed"
-msgstr ""
-
-#. module: g2p_social_registry_importer
-#. odoo-python
-#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
-#, python-format
-msgid "Connection error: %s"
-msgstr ""
-
-#. module: g2p_social_registry_importer
-#. odoo-python
-#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
-#, python-format
-msgid "Connection failed: Unable to reach authentication server at %s"
-msgstr ""
-
-#. module: g2p_social_registry_importer
-#. odoo-python
-#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
-#, python-format
-msgid "Connection timed out while contacting authentication server"
 msgstr ""
 
 #. module: g2p_social_registry_importer
@@ -142,13 +122,6 @@ msgid "Data source is not configured"
 msgstr ""
 
 #. module: g2p_social_registry_importer
-#. odoo-python
-#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
-#, python-format
-msgid "Data source path configuration error: %s"
-msgstr ""
-
-#. module: g2p_social_registry_importer
 #: model:ir.model.fields.selection,name:g2p_social_registry_importer.selection__g2p_fetch_social_registry_beneficiary__interval_type__days
 msgid "Days"
 msgstr ""
@@ -165,12 +138,6 @@ msgid "Draft"
 msgstr ""
 
 #. module: g2p_social_registry_importer
-#: model:ir.model.fields,field_description:g2p_social_registry_importer.field_res_config_settings__enable_social_registry_async
-#: model_terms:ir.ui.view,arch_db:g2p_social_registry_importer.social_registry_res_config_settings_view_form
-msgid "Enable Background Processing"
-msgstr ""
-
-#. module: g2p_social_registry_importer
 #: model:ir.model.fields,field_description:g2p_social_registry_importer.field_g2p_fetch_social_registry_beneficiary__end_datetime
 msgid "End Time"
 msgstr ""
@@ -178,13 +145,6 @@ msgstr ""
 #. module: g2p_social_registry_importer
 #: model:ir.model.fields.selection,name:g2p_social_registry_importer.selection__g2p_fetch_social_registry_beneficiary__job_status__failed
 msgid "Failed"
-msgstr ""
-
-#. module: g2p_social_registry_importer
-#. odoo-python
-#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
-#, python-format
-msgid "Failed to schedule async import: %s"
 msgstr ""
 
 #. module: g2p_social_registry_importer
@@ -238,13 +198,6 @@ msgstr ""
 #. module: g2p_social_registry_importer
 #: model:ir.actions.server,name:g2p_social_registry_importer.action_social_registry_import_action
 msgid "Import Social Registry beneficiary"
-msgstr ""
-
-#. module: g2p_social_registry_importer
-#. odoo-python
-#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
-#, python-format
-msgid "Import failed: %s"
 msgstr ""
 
 #. module: g2p_social_registry_importer
@@ -351,20 +304,8 @@ msgid "No path in data source named {path} is configured!"
 msgstr ""
 
 #. module: g2p_social_registry_importer
-#: model_terms:ir.ui.view,arch_db:g2p_social_registry_importer.social_registry_res_config_settings_view_form
-msgid ""
-"Once enabled, the Social Registry import will be processed in the background"
-" using job queues."
-msgstr ""
-
-#. module: g2p_social_registry_importer
 #: model:ir.actions.act_window,name:g2p_social_registry_importer.fetch_social_registry_beneficiary_action_window
 msgid "Previous Search Criterias"
-msgstr ""
-
-#. module: g2p_social_registry_importer
-#: model:ir.actions.server,name:g2p_social_registry_importer.ir_cron_process_social_registry_imports_ir_actions_server
-msgid "Process Social Registry Imports"
 msgstr ""
 
 #. module: g2p_social_registry_importer
@@ -399,6 +340,22 @@ msgid "Schedule Configuration"
 msgstr ""
 
 #. module: g2p_social_registry_importer
+#. odoo-python
+#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
+#, python-format
+msgid ""
+"Scheduled import started - will run every %(interval_number)s "
+"%(interval_type)s"
+msgstr ""
+
+#. module: g2p_social_registry_importer
+#. odoo-python
+#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
+#, python-format
+msgid "Scheduled import stopped"
+msgstr ""
+
+#. module: g2p_social_registry_importer
 #: model_terms:ir.ui.view,arch_db:g2p_social_registry_importer.fetch_social_registry_beneficiary_tree
 msgid "Search Criteria"
 msgstr ""
@@ -406,23 +363,18 @@ msgstr ""
 #. module: g2p_social_registry_importer
 #. odoo-python
 #: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
-#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
-#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
-#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
 #, python-format
 msgid "Social Registry"
 msgstr ""
 
 #. module: g2p_social_registry_importer
+#. odoo-python
+#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
 #: model:ir.model.fields,field_description:g2p_social_registry_importer.field_g2p_program_membership__social_registry_import_ids
 #: model:ir.model.fields,field_description:g2p_social_registry_importer.field_res_partner__social_registry_import_ids
 #: model:ir.model.fields,field_description:g2p_social_registry_importer.field_res_users__social_registry_import_ids
+#, python-format
 msgid "Social Registry Import"
-msgstr ""
-
-#. module: g2p_social_registry_importer
-#: model_terms:ir.ui.view,arch_db:g2p_social_registry_importer.social_registry_res_config_settings_view_form
-msgid "Social Registry Import Settings"
 msgstr ""
 
 #. module: g2p_social_registry_importer
@@ -479,13 +431,6 @@ msgstr ""
 #. module: g2p_social_registry_importer
 #: model_terms:ir.ui.view,arch_db:g2p_social_registry_importer.fetch_social_registry_beneficiary_form
 msgid "Test Connection"
-msgstr ""
-
-#. module: g2p_social_registry_importer
-#. odoo-python
-#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
-#, python-format
-msgid "Unexpected error occurred. Please check the logs."
 msgstr ""
 
 #. module: g2p_social_registry_importer
