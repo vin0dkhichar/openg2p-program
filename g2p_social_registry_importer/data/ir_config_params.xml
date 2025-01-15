@@ -21,10 +21,4 @@
         eval="('g2p_import_social_registry.max_registrants_count_job_queue', 100)"
     />
 
-    <!-- This configuration helps to enable or disable the background processing. -->
-    <function
-        model="ir.config_parameter"
-        name="set_param"
-        eval="('g2p_import_social_registry.enable_async', False)"
-    />
 </odoo>
