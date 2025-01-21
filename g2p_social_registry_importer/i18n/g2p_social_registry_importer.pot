@@ -304,6 +304,11 @@ msgid "No path in data source named {path} is configured!"
 msgstr ""
 
 #. module: g2p_social_registry_importer
+#: model:ir.model.fields,field_description:g2p_social_registry_importer.field_g2p_fetch_social_registry_beneficiary__output_mapping
+msgid "Output Mapping"
+msgstr ""
+
+#. module: g2p_social_registry_importer
 #: model:ir.actions.act_window,name:g2p_social_registry_importer.fetch_social_registry_beneficiary_action_window
 msgid "Previous Search Criterias"
 msgstr ""
@@ -431,6 +436,13 @@ msgstr ""
 #. module: g2p_social_registry_importer
 #: model_terms:ir.ui.view,arch_db:g2p_social_registry_importer.fetch_social_registry_beneficiary_form
 msgid "Test Connection"
+msgstr ""
+
+#. module: g2p_social_registry_importer
+#. odoo-python
+#: code:addons/g2p_social_registry_importer/models/fetch_social_registry_beneficiary.py:0
+#, python-format
+msgid "The provided value for 'Output Mapping' is not a valid jq expression."
 msgstr ""
 
 #. module: g2p_social_registry_importer
