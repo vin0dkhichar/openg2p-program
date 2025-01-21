@@ -3,8 +3,8 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
+import jq
 import requests
-from camel_converter import dict_to_snake
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
@@ -39,6 +39,7 @@ class G2PFetchSocialRegistryBeneficiary(models.Model):
     query = fields.Text(
         required=True,
     )
+    output_mapping = fields.Text(required=True)
 
     last_sync_date = fields.Datetime(string="Last synced on", required=False)
 
@@ -146,6 +147,18 @@ class G2PFetchSocialRegistryBeneficiary(models.Model):
     def onchange_target_registry(self):
         for rec in self:
             rec.target_program = None
+
+    @api.constrains("output_mapping")
+    def constraint_json_fields(self):
+        for rec in self:
+            if rec.output_mapping:
+                try:
+                    # Validate the JSON Query (jq expression)
+                    jq.compile(rec.output_mapping)
+                except ValueError as ve:
+                    raise ValidationError(
+                        _("The provided value for 'Output Mapping' is not a valid jq expression.")
+                    ) from ve
 
     def get_data_source_paths(self):
         self.ensure_one()
@@ -333,8 +346,8 @@ class G2PFetchSocialRegistryBeneficiary(models.Model):
         return partner_id, clean_identifiers
 
     def get_individual_data(self, record):
-        vals = dict_to_snake(record)
-        return vals
+        mapped_json = jq.first(self.output_mapping, record)
+        return mapped_json
 
     def get_member_kind(self, data):
         # TODO: Kind will be in List
@@ -547,7 +560,7 @@ class G2PFetchSocialRegistryBeneficiary(models.Model):
         main_job.delay()
 
     def fetch_social_registry_beneficiary(self):
-        self.write({"job_status": "running"})
+        self.write({"job_status": "running", "start_datetime": fields.Datetime.now()})
 
         config_parameters = self.env["ir.config_parameter"].sudo()
         today_isoformat = datetime.now(timezone.utc).isoformat()
