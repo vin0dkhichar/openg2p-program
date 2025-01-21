@@ -110,6 +110,7 @@
                         <field name="target_registry" />
                         <field name="target_program" />
                         <field name="query" />
+                        <field name="output_mapping" />
                         <field name="last_sync_date" />
                         <field
                             name="imported_registrant_ids"

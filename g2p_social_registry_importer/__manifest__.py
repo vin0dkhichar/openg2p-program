@@ -20,7 +20,7 @@
         "security/ir.model.access.csv",
         "views/fetch_social_registry_beneficiary_views.xml",
     ],
-    "external_dependencies": {"python": ["camel_converter"]},
+    "external_dependencies": {"python": ["jq"]},
     "application": True,
     "auto_install": False,
     "installable": True,
