@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from . import cycle
 from . import cycle_manager
 from . import programs

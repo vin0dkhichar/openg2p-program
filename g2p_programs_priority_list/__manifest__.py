@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
 {
-    'name': "OpenG2P Programs Priority List",
+    "name": "OpenG2P Programs Priority List",
     "category": "G2P/G2P",
     "version": "17.0.1.2.0",
     "sequence": 1,
     "author": "OpenG2P",
     "website": "https://openg2p.org",
     "license": "LGPL-3",
-    'depends': ['g2p_programs'],
-
+    "depends": ["g2p_programs"],
     "data": [
         "security/ir.model.access.csv",
         "views/cycle_view.xml",
@@ -28,4 +26,3 @@
     "installable": True,
     "auto_install": False,
 }
-

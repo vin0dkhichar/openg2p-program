@@ -1,47 +1,47 @@
-from odoo import api, models, fields, _
-from odoo.tools.safe_eval import safe_eval
 import logging
 
+from odoo import _, api, fields, models
+from odoo.tools.safe_eval import safe_eval
+
 _logger = logging.getLogger(__name__)
+
 
 class DefaultCycleManagerInherited(models.Model):
     _inherit = "g2p.cycle.manager.default"
 
     eligibility_domain = fields.Text(string="Domain", default="[]")
-    inclusion_limit = fields.Integer(string="Inclusion Limit", default=0)
+    inclusion_limit = fields.Integer(default=0)
 
-    sorting_criteria_ids = fields.One2many(
-        "g2p.sorting.criteria",
-        "manager_id",
-        string="Sorting Order"
-    )
+    sorting_criteria_ids = fields.One2many("g2p.sorting.criteria", "manager_id", string="Sorting Order")
 
     @api.model
     def create(self, vals):
         if "program_id" in vals:
-            vals["eligibility_domain"] = f"[('program_membership_ids.program_id', 'in', [{vals['program_id']}])]"
+            vals[
+                "eligibility_domain"
+            ] = f"[('program_membership_ids.program_id', 'in', [{vals['program_id']}])]"
         return super().create(vals)
 
     def new_cycle(self, name, new_start_date, sequence):
-        
         cycle = super().new_cycle(name, new_start_date, sequence)
 
         for rec in self:
-            is_disbursement = self.program_id.program_managers.manager_ref_id.is_disbursement_through_priority_list
+            is_disbursement = (
+                self.program_id.program_managers.manager_ref_id.is_disbursement_through_priority_list
+            )
             if is_disbursement:
                 for sorting_criterion in self.sorting_criteria_ids:
-                    self.env["g2p.sorting.criteria"].create({
-                        "cycle_id": cycle.id,
-                        "sequence": sorting_criterion.sequence,
-                        "field_name": sorting_criterion.field_name.id,
-                        "order": sorting_criterion.order,
-                    })
-        
+                    self.env["g2p.sorting.criteria"].create(
+                        {
+                            "cycle_id": cycle.id,
+                            "sequence": sorting_criterion.sequence,
+                            "field_name": sorting_criterion.field_name.id,
+                            "order": sorting_criterion.order,
+                        }
+                    )
+
                 cycle.write(
-                    {
-                        "inclusion_limit": rec.inclusion_limit,
-                        "eligibility_domain": rec.eligibility_domain
-                    }
+                    {"inclusion_limit": rec.inclusion_limit, "eligibility_domain": rec.eligibility_domain}
                 )
         return cycle
 
@@ -56,7 +56,9 @@ class DefaultCycleManagerInherited(models.Model):
         _logger.debug("Existing IDs: %s", len(existing_ids))
         beneficiaries = list(set(beneficiaries) - set(existing_ids))
 
-        is_disbursement = self.program_id.program_managers.manager_ref_id.is_disbursement_through_priority_list
+        is_disbursement = (
+            self.program_id.program_managers.manager_ref_id.is_disbursement_through_priority_list
+        )
         if is_disbursement:
             # Convert beneficiaries to recordset first
             if beneficiaries:
@@ -80,7 +82,7 @@ class DefaultCycleManagerInherited(models.Model):
             order = []
             for criterion in sorted_criteria:
                 field_name = criterion.field_name.name
-                reverse_flag = criterion.order == 'desc'
+                reverse_flag = criterion.order == "desc"
                 order_direction = "desc" if reverse_flag else "asc"
                 order.append(f"{field_name} {order_direction}")
 
@@ -89,7 +91,7 @@ class DefaultCycleManagerInherited(models.Model):
 
             # Query partners with sorting applied
             sorted_beneficiaries = self.env["res.partner"].search(domain, order=order_str)
-            
+
             if len(sorted_beneficiaries) > remaining_limit:
                 beneficiaries = sorted_beneficiaries[:remaining_limit].ids
             else:
@@ -123,7 +125,7 @@ class DefaultCycleManagerInherited(models.Model):
                 },
             },
         }
-    
+
     def _add_beneficiaries(self, cycle, beneficiaries, state="draft", do_count=False):
         """Add Beneficiaries with Rank
 

@@ -5,13 +5,16 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
+
 class G2PProgramInherit(models.Model):
     _inherit = "g2p.program"
 
     def create_new_cycle(self):
         if self.beneficiaries_count <= 0:
-            raise UserError(_("No enrolled registrants. Enroll registrants to program to create a new cycle."))
-        
+            raise UserError(
+                _("No enrolled registrants. Enroll registrants to program to create a new cycle.")
+            )
+
         for rec in self:
             message = None
             kind = "success"
@@ -25,7 +28,7 @@ class G2PProgramInherit(models.Model):
 
             _logger.debug("-" * 80)
             _logger.debug("pm: %s", program_manager)
-            
+
             new_cycle = program_manager.new_cycle()
             message = _("New cycle %s created.", new_cycle.name)
 
@@ -44,21 +47,25 @@ class G2PProgramInherit(models.Model):
                     },
                 }
             else:
-                wizard = self.env["cycle.creation.wizard"].create({
-                    "cycle_id": new_cycle.id,
-                    "name": new_cycle.name,
-                    "program_id": new_cycle.program_id.id,
-                    "eligibility_domain": new_cycle.eligibility_domain,
-                    "inclusion_limit": new_cycle.inclusion_limit,
-                })
+                wizard = self.env["cycle.creation.wizard"].create(
+                    {
+                        "cycle_id": new_cycle.id,
+                        "name": new_cycle.name,
+                        "program_id": new_cycle.program_id.id,
+                        "eligibility_domain": new_cycle.eligibility_domain,
+                        "inclusion_limit": new_cycle.inclusion_limit,
+                    }
+                )
 
                 for criterion in new_cycle.sorting_criteria_ids:
-                    self.env["cycle.creation.wizard.criteria"].create({
-                        "wizard_id": wizard.id,
-                        "field_name": criterion.field_name.id,
-                        "order": criterion.order,
-                        "sequence": criterion.sequence,
-                    })
+                    self.env["cycle.creation.wizard.criteria"].create(
+                        {
+                            "wizard_id": wizard.id,
+                            "field_name": criterion.field_name.id,
+                            "order": criterion.order,
+                            "sequence": criterion.sequence,
+                        }
+                    )
                 return {
                     "name": _("Update Priority Configuration"),
                     "type": "ir.actions.act_window",
