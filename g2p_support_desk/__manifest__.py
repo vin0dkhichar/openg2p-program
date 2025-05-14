@@ -1,6 +1,6 @@
 {
     "name": "G2P Support Desk",
-    "version": "17.0.1.0.0",
+    "version": "17.0.0.0.0",
     "summary": "OpenG2P Support Desk Management System",
     "category": "G2P/G2P",
     "author": "OpenG2P",
